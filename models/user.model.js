@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
-const Counter = require('./counter.model');
+
 
 const userSchema = new mongoose.Schema({
   username: { type: String, required: true, unique: true },
@@ -13,24 +13,11 @@ const userSchema = new mongoose.Schema({
 
   role: {
     type: String,
-    enum: ['customer', 'admin', 'staff', 'shipper'],
+    enum: ['customer', 'admin', 'clinic-owner'],
     default: 'customer'
   },
 
-  staffId: {
-    type: String,
-    // unique: true,
-    sparse: true,
-    default: null
-  },
-  // đối với staff/ shipper
-  status: {
-    type: String,
-    enum: ['available', 'assigned'],
-    default: function () {
-      return (this.role === 'staff' || this.role === 'shipper') ? 'available' : undefined;
-    }
-  },
+
 
   isBanned: {
     type: Boolean,
@@ -69,32 +56,6 @@ userSchema.pre('save', async function (next) {
     if (this.isModified('password') && this.password) {
       const salt = await bcrypt.genSalt(10);
       this.password = await bcrypt.hash(this.password, salt);
-    }
-
-    // ✅ Tạo prefix theo role
-    let prefix = null;
-    let counterName = null;
-
-    if (['staff', 'shipper'].includes(this.role)) {
-      prefix = 'nv';
-      counterName = 'staffId';
-    } else if (this.role === 'customer') {
-      prefix = 'cus';
-      counterName = 'customerId';
-    } else if (this.role === 'admin') {
-      prefix = 'ad';
-      counterName = 'adminId';
-    }
-
-    // ✅ Tăng counter nếu chưa có staffId
-    if (prefix && !this.staffId) {
-      const counter = await Counter.findByIdAndUpdate(
-        counterName,
-        { $inc: { seq: 1 } },
-        { new: true, upsert: true }
-      );
-
-      this.staffId = `${prefix}${counter.seq.toString().padStart(4, '0')}`;
     }
 
     next();

@@ -15,14 +15,15 @@ const {
   createStaff,
   getStaffById,
   updateStaff,
-  deleteStaff 
+  deleteStaff, 
+  updateUserAvatar
 } = require('../controllers/user.controller');
 
 const { protect, isAdmin } = require('../middlewares/auth.middleware');
 const upload = require('../middlewares/upload.middleware');             //upload cloudinary
 const User = require('../models/user.model');
 const uploadUserAvatar = upload({
-  folderPrefix: 'chill-cup/avatars/users',
+  folderPrefix: 'my-pet/avatars/users',
   model: User,
   nameField: 'username'
 });
@@ -61,7 +62,13 @@ router.get('/:id', protect, getUserById);
 // @desc    Cập nhật thông tin người dùng
 // @access  Private (admin hoặc chính mình)
 // router.put('/:id', upload.single('avatar'), updateUser);
+
+// update user avatar only
+router.put('/:id/avatar', uploadUserAvatar.single('avatar'), updateUserAvatar);
+
 router.put('/:id', uploadUserAvatar.single('avatar'), updateUser);
+
+
 
 // @route   DELETE /api/users/:id
 // @desc    Xóa người dùng
