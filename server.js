@@ -15,6 +15,12 @@ require('./config/passport');  // import sau dotenv.config()
 
 const userRoutes = require('./routes/user.routes')
 const passwordRoutes = require('./routes/password.routes');
+const clinicRoutes = require('./routes/clinic.routes');
+const doctorRoutes = require('./routes/doctor.routes');
+const petRoutes = require('./routes/pet.routes');
+const doctorScheduleRoutes = require('./routes/doctorSchedule.routes');
+const appointmentRoutes = require('./routes/appointment.routes'); 
+const encounterRoutes = require('./routes/encounter.routes');
 
 
 
@@ -44,7 +50,12 @@ const authRoutes = require('./routes/auth.routes');   // authRoutes phải gọi
 app.use('/api/auth', authRoutes);
 app.use('/api/users',userRoutes);
 app.use('/api/password', passwordRoutes);
-
+app.use('/api/clinics', clinicRoutes);
+app.use('/api/doctors', doctorRoutes);
+app.use('/api/pets', petRoutes);
+app.use('/api/doctor-schedules', doctorScheduleRoutes);
+app.use('/api/appointments', appointmentRoutes);
+app.use('/api/encounters', encounterRoutes);
 
 
 

@@ -1,6 +1,7 @@
 // controllers/user.controller.js
 const User = require('../models/user.model');
 const { ROLES } = require('../models/user.model');
+const Clinic = require('../models/clinic.model'); // Đảm bảo bạn đã import mô hình Clinic
 
 // @desc    Get all users (optional: ?page=&limit=&role=)
 // @route   GET /api/users
@@ -88,18 +89,45 @@ exports.createUser = async (req, res) => {
 // @desc    Get user by ID
 // @route   GET /api/users/:id
 // @access  Admin or same user
+// Đảm bảo bạn đã import mô hình Clinic
+
 exports.getUserById = async (req, res) => {
   try {
-    const user = await User.findById(req.params.id).select('-password -refreshToken -googleId');
+    // 1. Tìm người dùng
+    let user = await User.findById(req.params.id).select(
+      '-password -refreshToken -googleId'
+    );
     if (!user) return res.status(404).json({ message: 'User not found' });
 
-    // nếu không phải admin và cũng không phải chính chủ → chặn
-    if (req.user?.role !== 'admin' && req.user?.id?.toString() !== user._id.toString()) {
+    // 2. Kiểm tra phân quyền (giữ nguyên logic ban đầu)
+    // Nếu không phải admin VÀ không phải chính chủ -> chặn
+    if (
+      req.user?.role !== 'admin' &&
+      req.user?.id?.toString() !== user._id.toString()
+    ) {
       return res.status(403).json({ message: 'Forbidden' });
     }
 
+    // 3. Populate thông tin phòng khám dựa trên vai trò
+    if (user.role === 'clinic-owner') {
+      // Dùng .populate() cho mảng 'clinicsOwned'
+      user = await user.populate({
+        path: 'clinicsOwned',
+        select: 'name address phone timeZone', // Chỉ lấy các trường cần thiết
+      });
+    } else if (user.role === 'doctor') {
+      // Dùng .populate() cho ObjectId đơn 'primaryClinicId'
+      user = await user.populate({
+        path: 'primaryClinicId',
+        select: 'name address phone timeZone', // Chỉ lấy các trường cần thiết
+      });
+    }
+
+    // 4. Trả về kết quả
     res.json(user);
   } catch (err) {
+    // Xử lý lỗi
+    console.error(err);
     res.status(500).json({ message: 'Failed to get user', error: err.message });
   }
 };
