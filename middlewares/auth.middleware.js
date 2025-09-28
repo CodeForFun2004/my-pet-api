@@ -26,6 +26,15 @@ const protect = async (req, res, next) => {
   }
 };
 
+const isAdminOrClinicOwner = (req, res, next) => {
+    const role = req.user?.role;
+    if (role === 'admin' || role === 'clinic-owner') {
+        return next();
+    } else {
+        return res.status(403).json({ message: 'Truy cập bị từ chối: Chỉ dành cho Admin hoặc Chủ phòng khám' });
+    }
+};
+
 // ✅ NEW: Kiểm tra quyền admin
 const isAdmin = (req, res, next) => {
   if (req.user && req.user.role === 'admin') {
@@ -35,20 +44,20 @@ const isAdmin = (req, res, next) => {
   }
 };
 
-const isStaff = (req, res, next) => {
-  if (req.user && req.user.role === 'staff') {
+const isClinicOwner = (req, res, next) => {
+  if (req.user && req.user.role === 'clinic-owner') {
     return next();
   } else {
-    return res.status(403).json({ message: 'Truy cập bị từ chối: chỉ dành cho staff' });
+    return res.status(403).json({ message: 'Truy cập bị từ chối: chỉ dành cho clinic-owner' });
   }
 };
 
-const isShipper = (req, res, next) => {
-  if (req.user && req.user.role === 'shipper') {
+const isDoctor = (req, res, next) => {
+  if (req.user && req.user.role === 'doctor') {
     return next();
   } else {
-    return res.status(403).json({ message: 'Truy cập bị từ chối: chỉ dành cho shipper' });
+    return res.status(403).json({ message: 'Truy cập bị từ chối: chỉ dành cho doctor' });
   }
 };  
 
-module.exports = { protect, isAdmin, isStaff, isShipper };
+module.exports = { protect, isAdmin, isClinicOwner, isDoctor, isAdminOrClinicOwner };
