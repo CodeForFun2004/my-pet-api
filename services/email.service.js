@@ -9,7 +9,8 @@ const transporter = nodemailer.createTransport({
 });
 
 exports.sendOTPEmail = async (email, otpCode) => {
-  await transporter.sendMail({
+
+  const data = await transporter.sendMail({
     from: `"My Pet" <${process.env.EMAIL_USER}>`,
     to: email,
     subject: '🐾 Kích Hoạt Tài Khoản My Pet của bạn',
@@ -42,6 +43,7 @@ exports.sendOTPEmail = async (email, otpCode) => {
       </div>
     `
   });
+  console.log("Email sent: " + data.response);
 };
   
 // Gửi email OTP đặt lại mật khẩu
