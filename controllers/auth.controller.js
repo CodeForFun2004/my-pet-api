@@ -33,7 +33,33 @@ exports.registerRequest = async (req, res) => {
     console.log(`Email OTP đã được gửi thành công đến: ${email}`, data?.response);
     res.status(200).json({ message: 'Mã OTP đã được gửi đến email của bạn' });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    console.error('Lỗi trong registerRequest:', err);
+    
+    // Xóa pending user nếu gửi email thất bại
+    try {
+      await PendingUser.deleteMany({ email });
+      console.log(`Đã xóa pending user do lỗi gửi email: ${email}`);
+    } catch (deleteErr) {
+      console.error('Lỗi khi xóa pending user:', deleteErr);
+    }
+    
+    // Phân loại lỗi để trả về message phù hợp
+    if (err.message.includes('Connection timeout') || err.message.includes('ECONNREFUSED')) {
+      res.status(503).json({ 
+        message: 'Dịch vụ email tạm thời không khả dụng. Vui lòng thử lại sau ít phút.',
+        error: 'EMAIL_SERVICE_UNAVAILABLE'
+      });
+    } else if (err.message.includes('Thiếu cấu hình email')) {
+      res.status(500).json({ 
+        message: 'Lỗi cấu hình hệ thống. Vui lòng liên hệ quản trị viên.',
+        error: 'EMAIL_CONFIG_ERROR'
+      });
+    } else {
+      res.status(500).json({ 
+        message: 'Không thể gửi email. Vui lòng thử lại sau.',
+        error: err.message
+      });
+    }
   }
 };
 
@@ -208,7 +234,33 @@ exports.forgotPassword = async (req, res) => {
 
     res.status(200).json({ message: 'Mã OTP đã được gửi đến email của bạn' });
   } catch (err) {
-    res.status(500).json({ message: 'Lỗi server', error: err.message });
+    console.error('Lỗi trong forgotPassword:', err);
+    
+    // Xóa OTP nếu gửi email thất bại
+    try {
+      await Otp.deleteMany({ email });
+      console.log(`Đã xóa OTP do lỗi gửi email: ${email}`);
+    } catch (deleteErr) {
+      console.error('Lỗi khi xóa OTP:', deleteErr);
+    }
+    
+    // Phân loại lỗi để trả về message phù hợp
+    if (err.message.includes('Connection timeout') || err.message.includes('ECONNREFUSED')) {
+      res.status(503).json({ 
+        message: 'Dịch vụ email tạm thời không khả dụng. Vui lòng thử lại sau ít phút.',
+        error: 'EMAIL_SERVICE_UNAVAILABLE'
+      });
+    } else if (err.message.includes('Thiếu cấu hình email')) {
+      res.status(500).json({ 
+        message: 'Lỗi cấu hình hệ thống. Vui lòng liên hệ quản trị viên.',
+        error: 'EMAIL_CONFIG_ERROR'
+      });
+    } else {
+      res.status(500).json({ 
+        message: 'Không thể gửi email. Vui lòng thử lại sau.',
+        error: err.message
+      });
+    }
   }
 };
 

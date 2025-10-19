@@ -11,7 +11,7 @@ const connectDB = async () => {
       await mongoose.connect(mongoCloud);
       console.log('MongoDB connected successfully');
    } catch (err) {
-      console.error('Error connecting MongoDB:', err.message);
+      console.error('Error connecting MongoDB:npm', err.message);
       process.exit(1);
    }
 };
