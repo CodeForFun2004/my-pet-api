@@ -29,8 +29,8 @@ exports.registerRequest = async (req, res) => {
     await PendingUser.create({ fullname, username, email, password, otp, expiresAt });
     console.log(`Pending user đã được tạo: ${fullname}, ${username}, ${email}`);
 
-    await sendOTPEmail(email, otp);
-
+   const data = await sendOTPEmail(email, otp);
+    console.log(`Email OTP đã được gửi đến: ${data}`);
     res.status(200).json({ message: 'Mã OTP đã được gửi đến email của bạn' });
   } catch (err) {
     res.status(500).json({ message: err.message });
