@@ -19,52 +19,73 @@ exports.getDoctorAvailability = async (req, res) => {
 
 // POST /api/appointments  (customer/staff)
 // body: { clinicId, doctorId, petId, startAt, reason, channel }
+
 exports.createAppointment = async (req, res) => {
-  const session = await mongoose.startSession();
   try {
-    const { clinicId, doctorId, petId, startAt, reason, channel } = req.body;
+    const { clinicId, doctorId, petId, startAt, examType, note, channel } = req.body;
+
+    // 🧩 Kiểm tra đầu vào
     if (!clinicId || !doctorId || !petId || !startAt) {
       return res.status(400).json({ message: 'Missing required fields' });
     }
 
+    // 🩺 Kiểm tra bác sĩ tồn tại
     const doctor = await Doctor.findById(doctorId).lean();
-    if (!doctor) return res.status(404).json({ message: 'Doctor not found' });
+    if (!doctor) {
+      return res.status(404).json({ message: 'Doctor not found' });
+    }
 
+    // ⏰ Tính thời gian bắt đầu - kết thúc dựa vào slot duration
     const slotMin = doctor.scheduleTemplate?.slotDurationMin ?? 30;
     const start = new Date(startAt);
     const end = new Date(start.getTime() + slotMin * 60000);
 
     const customerId = req.user.id;
 
-    await session.withTransaction(async () => {
-      // Re-check conflict (maxConcurrent=1 → trùng startAt là conflict)
-      const conflict = await Appointment.findOne({
-        doctorId,
-        startAt: start,
-        status: { $in: ['PENDING','CONFIRMED','CHECKED_IN'] }
-      }).session(session);
-      if (conflict) throw new Error('TIME_CONFLICT');
-
-      await Appointment.create([{
-        clinicId, doctorId, customerId, petId,
-        startAt: start, endAt: end,
-        reason, channel: channel || 'OFFLINE',
-        timeZone: 'Asia/Ho_Chi_Minh',
-        status: 'CONFIRMED',
-        meta: { bookedBy: req.user.role === 'customer' ? 'CUSTOMER' : 'STAFF' }
-      }], { session });
+    // 🔍 Kiểm tra trùng lịch
+    const conflict = await Appointment.findOne({
+      doctorId,
+      startAt: start,
+      status: { $in: ['PENDING', 'CONFIRMED', 'CHECKED_IN'] }
     });
 
-    res.status(201).json({ message: 'Appointment created' });
-  } catch (err) {
-    if (err?.message === 'TIME_CONFLICT' || err?.code === 11000) {
+    if (conflict) {
       return res.status(409).json({ message: 'Slot has just been taken' });
     }
-    res.status(500).json({ message: 'Failed to create appointment', error: err.message });
-  } finally {
-    await session.endSession();
+
+    // 🆕 Tạo appointment mới ở trạng thái PENDING
+    await Appointment.create({
+      clinicId,
+      doctorId,
+      customerId,
+      petId,
+      startAt: start,
+      endAt: end,
+      examType, // 🩺 loại khám
+      note,     // 📝 ghi chú
+      channel: channel || 'OFFLINE',
+      timeZone: 'Asia/Ho_Chi_Minh',
+      status: 'PENDING', // 👈 chờ phòng khám xác nhận
+      meta: {
+        bookedBy: req.user.role === 'customer' ? 'CUSTOMER' : 'STAFF'
+      }
+    });
+
+    return res.status(201).json({
+      message: 'Appointment created and pending confirmation'
+    });
+
+  } catch (err) {
+    console.error('Error creating appointment:', err);
+    return res.status(500).json({
+      message: 'Failed to create appointment',
+      error: err.message
+    });
   }
 };
+
+
+
 
 // GET /api/appointments/:id
 exports.getAppointmentById = async (req, res) => {
@@ -95,38 +116,55 @@ exports.updateAppointmentStatus = async (req, res) => {
     const apm = await Appointment.findById(req.params.id);
     if (!apm) return res.status(404).json({ message: 'Appointment not found' });
 
-    // quyền đơn giản:
-    // - CHECKED_IN/COMPLETED: doctor/owner/admin
-    // - CANCELLED: customer trước cancelBeforeMinutes, hoặc owner/admin
     const clinic = await Clinic.findById(apm.clinicId);
     const isOwner = clinic.ownerId.toString() === req.user.id;
     const isDoctorSelf = req.user.role === 'doctor' && req.user.doctorProfileId?.toString() === apm.doctorId.toString();
 
-    if (['CHECKED_IN','COMPLETED','NO_SHOW'].includes(status)) {
+    // ✅ Phòng khám xác nhận lịch
+    if (status === 'CONFIRMED') {
+      if (!(req.user.role === 'admin' || isOwner)) {
+        return res.status(403).json({ message: 'Forbidden' });
+      }
+      apm.status = 'CONFIRMED';
+    }
+
+    // 🏥 Bác sĩ hoặc chủ phòng khám cập nhật trạng thái khám
+    else if (['CHECKED_IN','COMPLETED','NO_SHOW'].includes(status)) {
       if (!(req.user.role === 'admin' || isOwner || isDoctorSelf)) {
         return res.status(403).json({ message: 'Forbidden' });
       }
       apm.status = status;
-    } else if (status === 'CANCELLED') {
+    }
+
+    // ❌ Hủy lịch
+    else if (status === 'CANCELLED') {
       if (req.user.role === 'customer') {
         const deadline = new Date(apm.startAt.getTime() - (clinic.cancelBeforeMinutes || 120) * 60000);
-        if (new Date() > deadline) return res.status(400).json({ message: 'Too late to cancel' });
-        if (apm.customerId.toString() !== req.user.id) return res.status(403).json({ message: 'Forbidden' });
+        if (new Date() > deadline)
+          return res.status(400).json({ message: 'Too late to cancel' });
+        if (apm.customerId.toString() !== req.user.id)
+          return res.status(403).json({ message: 'Forbidden' });
       } else if (!(req.user.role === 'admin' || isOwner)) {
         return res.status(403).json({ message: 'Forbidden' });
       }
       apm.status = 'CANCELLED';
       apm.cancelledAt = new Date();
-    } else {
+    }
+
+    // 🚫 Không hợp lệ
+    else {
       return res.status(400).json({ message: 'Invalid status transition' });
     }
 
     const saved = await apm.save();
-    res.json({ message: 'Status updated', appointment: saved });
+    return res.json({ message: 'Status updated', appointment: saved });
+
   } catch (err) {
-    res.status(500).json({ message: 'Failed to update status', error: err.message });
+    console.error('Error updating appointment status:', err);
+    return res.status(500).json({ message: 'Failed to update status', error: err.message });
   }
 };
+
 
 // (optional) list của tôi
 // GET /api/appointments/mine?role=customer|doctor

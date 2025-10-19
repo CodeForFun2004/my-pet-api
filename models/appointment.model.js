@@ -10,9 +10,10 @@ const appointmentSchema = new mongoose.Schema({
   endAt:      { type: Date, required: true },
   timeZone:   { type: String, default: 'Asia/Ho_Chi_Minh' },
 
-  reason:     { type: String },
+  examType:   { type: String, required: false }, // 🩺 Loại khám
+  note:       { type: String }, // 📝 Ghi chú thêm của khách hoặc phòng khám
   channel:    { type: String, enum: ['OFFLINE','ONLINE'], default: 'OFFLINE' },
-  status:     { type: String, enum: ['PENDING','CONFIRMED','CHECKED_IN','COMPLETED','CANCELLED','NO_SHOW'], default: 'CONFIRMED' },
+  status:     { type: String, enum: ['PENDING','CONFIRMED','CHECKED_IN','COMPLETED','CANCELLED','NO_SHOW'], default: 'PENDING' },
 
   conversationId: { type: mongoose.Schema.Types.ObjectId, ref: 'Conversation' },
   encounterId:    { type: mongoose.Schema.Types.ObjectId, ref: 'Encounter' },
