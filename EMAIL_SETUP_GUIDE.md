@@ -40,6 +40,8 @@ EMAIL_USER=your-email@gmail.com
 EMAIL_PASS=your-app-password
 ```
 
+**Lưu ý**: Render tự động set `RENDER=true`, nên không cần set thêm biến này.
+
 ## Tạo App Password cho Gmail
 
 1. Vào Google Account Settings
@@ -67,6 +69,12 @@ vercel env add EMAIL_PASS
 ### 3. Railway
 Thêm vào Railway dashboard:
 - NODE_ENV=production
+- EMAIL_USER=your-email@gmail.com
+- EMAIL_PASS=your-app-password
+
+### 4. Render
+Render tự động set `RENDER=true`, chỉ cần thêm:
+- NODE_ENV=production (optional, vì RENDER=true đã đủ)
 - EMAIL_USER=your-email@gmail.com
 - EMAIL_PASS=your-app-password
 
