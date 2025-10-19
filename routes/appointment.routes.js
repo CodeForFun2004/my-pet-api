@@ -9,7 +9,7 @@ const {
   listMyAppointments
 } = require('../controllers/appointment.controller');
 
-router.get('/doctors/:id/availability', protect, getDoctorAvailability);
+router.get('/doctors/:id/availability',  getDoctorAvailability);
 router.post('/', protect, createAppointment);
 router.get('/mine', protect, listMyAppointments);
 router.get('/:id', protect, getAppointmentById);
