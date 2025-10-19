@@ -14,16 +14,19 @@ exports.registerRequest = async (req, res) => {
   console.log(`Mật khẩu nhận được từ client: ${password}`);
   try {
     const existingUser = await User.findOne({ $or: [{ email }, { username }] });
+    console.log(`Người dùng đã tồn tại: ${existingUser}`);
     if (existingUser) {
       return res.status(400).json({ message: 'Email hoặc username đã được sử dụng' });
     }
 
     const otp = generateOTP();
+    console.log(`Mã OTP được tạo: ${otp}`);
     const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 phút
 
     // Không hash mật khẩu ở đây
     await PendingUser.deleteMany({ email });
     await PendingUser.create({ fullname, username, email, password, otp, expiresAt });
+    console.log(`Pending user đã được tạo: ${fullname}, ${username}, ${email}`);
 
     await sendOTPEmail(email, otp);
 
