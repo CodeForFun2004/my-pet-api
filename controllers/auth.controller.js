@@ -11,7 +11,7 @@ const bcrypt = require('bcryptjs');
 // Đăng ký
 exports.registerRequest = async (req, res) => {
   const { fullname, username, email, password } = req.body;
-  log(`Mật khẩu nhận được từ client: ${password}`);
+  console.log(`Mật khẩu nhận được từ client: ${password}`);
   try {
     const existingUser = await User.findOne({ $or: [{ email }, { username }] });
     if (existingUser) {
