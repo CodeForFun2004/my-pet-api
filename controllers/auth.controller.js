@@ -25,6 +25,7 @@ exports.registerRequest = async (req, res) => {
 
     // Không hash mật khẩu ở đây
     await PendingUser.deleteMany({ email });
+    console.log(`Xóa tất cả pending user cũ với email: ${email}`);
     await PendingUser.create({ fullname, username, email, password, otp, expiresAt });
     console.log(`Pending user đã được tạo: ${fullname}, ${username}, ${email}`);
 
