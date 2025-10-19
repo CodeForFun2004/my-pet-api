@@ -29,8 +29,8 @@ exports.registerRequest = async (req, res) => {
     await PendingUser.create({ fullname, username, email, password, otp, expiresAt });
     console.log(`Pending user đã được tạo: ${fullname}, ${username}, ${email}`);
 
-   const data = await sendOTPEmail(email, otp);
-    console.log(`Email OTP đã được gửi đến: ${data}`);
+    const data = await sendOTPEmail(email, otp);
+    console.log(`Email OTP đã được gửi thành công đến: ${email}`, data?.response);
     res.status(200).json({ message: 'Mã OTP đã được gửi đến email của bạn' });
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -203,7 +203,8 @@ exports.forgotPassword = async (req, res) => {
     await Otp.create({ email, otp, expiresAt });
 
     // Gửi OTP qua email
-    await sendResetPasswordEmail(email, otp);
+    const data = await sendResetPasswordEmail(email, otp);
+    console.log(`Email reset password đã được gửi thành công đến: ${email}`, data?.response);
 
     res.status(200).json({ message: 'Mã OTP đã được gửi đến email của bạn' });
   } catch (err) {
