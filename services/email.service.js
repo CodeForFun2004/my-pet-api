@@ -2,15 +2,18 @@ const nodemailer = require('nodemailer');
 
 // Tạo transporter với cấu hình linh hoạt cho production
 const createTransporter = () => {
-  // Kiểm tra môi trường production
-  const isProduction = process.env.NODE_ENV === 'production';
+  // Kiểm tra môi trường production - thêm fallback cho Render
+  const isProduction = process.env.NODE_ENV === 'production' || 
+                      process.env.RENDER === 'true';
   
   console.log(`Môi trường hiện tại: ${isProduction ? 'production' : 'development'}`);
+  console.log(`NODE_ENV: ${process.env.NODE_ENV}`);
+  console.log(`RENDER: ${process.env.RENDER}`);
   
   if (isProduction) {
     // Cấu hình cho production - sử dụng SMTP trực tiếp thay vì service
     console.log('Sử dụng cấu hình SMTP cho production...');
-    return nodemailer.createTransporter({
+    return nodemailer.createTransport({
       host: 'smtp.gmail.com',
       port: 587,
       secure: false, // true cho 465, false cho các port khác
@@ -33,7 +36,7 @@ const createTransporter = () => {
   } else {
     // Cấu hình cho development
     console.log('Sử dụng cấu hình Gmail service cho development...');
-    return nodemailer.createTransporter({
+    return nodemailer.createTransport({
       service: 'gmail',
       auth: {
         user: process.env.EMAIL_USER,
