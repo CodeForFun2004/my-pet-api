@@ -2,13 +2,15 @@ const passport = require('passport');
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const User = require('../models/user.model');
 
-passport.use(
-  new GoogleStrategy(
-    {
-      clientID: process.env.GOOGLE_CLIENT_ID,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-      callbackURL: process.env.GOOGLE_CALLBACK_URL,
-    },
+// Only configure Google OAuth if environment variables are present
+if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET && process.env.GOOGLE_CALLBACK_URL) {
+  passport.use(
+    new GoogleStrategy(
+      {
+        clientID: process.env.GOOGLE_CLIENT_ID,
+        clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+        callbackURL: process.env.GOOGLE_CALLBACK_URL,
+      },
     async (accessToken, refreshToken, profile, done) => {
       const email = profile.emails[0].value;
       const avatar = profile.photos[0].value;
@@ -44,8 +46,10 @@ passport.use(
         done(err, null);
       }
     }
-  )
-);
+  ));
+} else {
+  console.warn('⚠️  Google OAuth credentials not found. Google login will be disabled.');
+}
 
 // Serialize user to session (bắt buộc cho passport nhưng không dùng với JWT)
 passport.serializeUser((user, done) => {

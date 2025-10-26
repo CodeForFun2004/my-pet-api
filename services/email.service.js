@@ -1,57 +1,31 @@
 const nodemailer = require('nodemailer');
 
-// Tạo transporter với cấu hình linh hoạt cho production
+// Tạo transporter sử dụng SendGrid SMTP cho mọi môi trường
 const createTransporter = () => {
-  // Kiểm tra môi trường production - thêm fallback cho Render
-  const isProduction = process.env.NODE_ENV === 'production' || 
-                      process.env.RENDER === 'true';
-  
-  console.log(`Môi trường hiện tại: ${isProduction ? 'production' : 'development'}`);
-  console.log(`NODE_ENV: ${process.env.NODE_ENV}`);
-  console.log(`RENDER: ${process.env.RENDER}`);
-  
-  if (isProduction) {
-    // Cấu hình cho production - sử dụng SMTP trực tiếp thay vì service
-    console.log('Sử dụng cấu hình SMTP cho production...');
-    return nodemailer.createTransport({
-      host: 'smtp.gmail.com',
-      port: 587,
-      secure: false, // true cho 465, false cho các port khác
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
-      },
-      tls: {
-        rejectUnauthorized: false // Cho phép self-signed certificates
-      },
-      connectionTimeout: 30000, // 30 giây
-      greetingTimeout: 15000,   // 15 giây
-      socketTimeout: 30000,     // 30 giây
-      pool: true,
-      maxConnections: 3,
-      maxMessages: 50,
-      rateDelta: 20000,
-      rateLimit: 3
-    });
-  } else {
-    // Cấu hình cho development
-    console.log('Sử dụng cấu hình Gmail service cho development...');
-    return nodemailer.createTransport({
-      service: 'gmail',
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
-      },
-      connectionTimeout: 60000,
-      greetingTimeout: 30000,
-      socketTimeout: 60000,
-      pool: true,
-      maxConnections: 5,
-      maxMessages: 100,
-      rateDelta: 20000,
-      rateLimit: 5
-    });
+  console.log('Sử dụng cấu hình SMTP SendGrid...');
+  if (!process.env.SENDGRID_API_KEY) {
+    console.warn('Thiếu SENDGRID_API_KEY trong biến môi trường');
   }
+  return nodemailer.createTransport({
+    host: 'smtp.sendgrid.net',
+    port: 587,
+    secure: false,
+    auth: {
+      user: 'apikey', // SendGrid yêu cầu chuỗi 'apikey' là username
+      pass: process.env.SENDGRID_API_KEY,
+    },
+    tls: {
+      rejectUnauthorized: false
+    },
+    connectionTimeout: 30000, // 30 giây
+    greetingTimeout: 15000,   // 15 giây
+    socketTimeout: 30000,     // 30 giây
+    pool: true,
+    maxConnections: 3,
+    maxMessages: 50,
+    rateDelta: 20000,
+    rateLimit: 3
+  });
 };
 
 const transporter = createTransporter();
@@ -88,13 +62,15 @@ exports.sendOTPEmail = async (email, otpCode) => {
   try {
     console.log(`Bắt đầu gửi email OTP đến: ${email}`);
     
-    // Kiểm tra biến môi trường
-    if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
-      throw new Error('Thiếu cấu hình email (EMAIL_USER hoặc EMAIL_PASS)');
+    // Kiểm tra biến môi trường cho SendGrid
+    if (!process.env.SENDGRID_API_KEY || !process.env.SENDGRID_SENDER_EMAIL) {
+      throw new Error('Thiếu cấu hình SendGrid (SENDGRID_API_KEY hoặc SENDGRID_SENDER_EMAIL)');
     }
 
     const emailOptions = {
-      from: `"My Pet" <${process.env.EMAIL_USER}>`,
+      from: `"${
+        process.env.SENDGRID_FROM_NAME || 'My Pet'
+      }" <${process.env.SENDGRID_SENDER_EMAIL}>`,
       to: email,
       subject: '🐾 Kích Hoạt Tài Khoản My Pet của bạn',
       html: `
@@ -142,13 +118,15 @@ exports.sendResetPasswordEmail = async (email, otpCode) => {
   try {
     console.log(`Bắt đầu gửi email reset password đến: ${email}`);
     
-    // Kiểm tra biến môi trường
-    if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
-      throw new Error('Thiếu cấu hình email (EMAIL_USER hoặc EMAIL_PASS)');
+    // Kiểm tra biến môi trường cho SendGrid
+    if (!process.env.SENDGRID_API_KEY || !process.env.SENDGRID_SENDER_EMAIL) {
+      throw new Error('Thiếu cấu hình SendGrid (SENDGRID_API_KEY hoặc SENDGRID_SENDER_EMAIL)');
     }
 
     const emailOptions = {
-      from: `"My Pet" <${process.env.EMAIL_USER}>`,
+      from: `"${
+        process.env.SENDGRID_FROM_NAME || 'My Pet'
+      }" <${process.env.SENDGRID_SENDER_EMAIL}>`,
       to: email,
       subject: '🔑 Mã Đặt Lại Mật Khẩu My Pet',
       html: `

@@ -12,15 +12,16 @@ dotenv.config();
 connectDB();
 require('./config/passport');  // import sau dotenv.config()
 
-
 const userRoutes = require('./routes/user.routes')
 const passwordRoutes = require('./routes/password.routes');
 const clinicRoutes = require('./routes/clinic.routes');
 const doctorRoutes = require('./routes/doctor.routes');
 const petRoutes = require('./routes/pet.routes');
 const doctorScheduleRoutes = require('./routes/doctorSchedule.routes');
-const appointmentRoutes = require('./routes/appointment.routes'); 
+const appointmentRoutes = require('./routes/appointment.routes');
 const encounterRoutes = require('./routes/encounter.routes');
+const sendgridRoutes = require('./routes/sendgrid.routes');
+
 
 
 
@@ -56,6 +57,7 @@ app.use('/api/pets', petRoutes);
 app.use('/api/doctor-schedules', doctorScheduleRoutes);
 app.use('/api/appointments', appointmentRoutes);
 app.use('/api/encounters', encounterRoutes);
+app.use('/api/email-test', sendgridRoutes);
 
 
 
