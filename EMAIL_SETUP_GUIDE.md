@@ -10,9 +10,9 @@ Lỗi "Connection timeout" khi deploy thường xảy ra vì:
 
 ## Giải pháp đã áp dụng
 
-### 1. Cấu hình SMTP linh hoạt
-- **Development**: Sử dụng Gmail service (như cũ)
-- **Production**: Sử dụng SMTP trực tiếp với cấu hình tối ưu
+### 1. Sử dụng SendGrid API (khuyến nghị)
+- Tránh SMTP vì có thể bị chặn/timeouts trên một số hosting (ví dụ: Render)
+- Dùng SendGrid HTTP API (`@sendgrid/mail`) cho cả development và production
 
 ### 2. Cơ chế Retry
 - Thử lại 3 lần với exponential backoff
@@ -29,15 +29,17 @@ Lỗi "Connection timeout" khi deploy thường xảy ra vì:
 ### Cho Development (.env.local)
 ```env
 NODE_ENV=development
-EMAIL_USER=your-email@gmail.com
-EMAIL_PASS=your-app-password
+SENDGRID_API_KEY=your-sendgrid-api-key
+SENDGRID_SENDER_EMAIL=verified-sender@example.com
+SENDGRID_FROM_NAME=My Pet
 ```
 
 ### Cho Production
 ```env
 NODE_ENV=production
-EMAIL_USER=your-email@gmail.com
-EMAIL_PASS=your-app-password
+SENDGRID_API_KEY=your-sendgrid-api-key
+SENDGRID_SENDER_EMAIL=verified-sender@example.com
+SENDGRID_FROM_NAME=My Pet
 ```
 
 **Lưu ý**: Render tự động set `RENDER=true`, nên không cần set thêm biến này.
@@ -119,14 +121,23 @@ Nếu Gmail vẫn không hoạt động, có thể dùng:
 
 ### SendGrid
 ```javascript
-const transporter = nodemailer.createTransporter({
-  host: 'smtp.sendgrid.net',
-  port: 587,
-  auth: {
-    user: 'apikey',
-    pass: process.env.SENDGRID_API_KEY
-  }
-});
+// Use SendGrid HTTP API (no SMTP)
+const sgMail = require('@sendgrid/mail');
+
+sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+
+async function sendWithSendGrid(to, subject, html, text = undefined) {
+  const fromEmail = process.env.SENDGRID_SENDER_EMAIL;
+  const fromName = process.env.SENDGRID_FROM_NAME || 'My Pet';
+
+  await sgMail.send({
+    to,
+    from: { email: fromEmail, name: fromName },
+    subject,
+    text,
+    html,
+  });
+}
 ```
 
 ### Mailgun

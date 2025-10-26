@@ -1,76 +1,61 @@
-const nodemailer = require('nodemailer');
+const sgMail = require('@sendgrid/mail');
 
-// Tạo transporter sử dụng SendGrid SMTP cho mọi môi trường
-const createTransporter = () => {
-  console.log('Sử dụng cấu hình SMTP SendGrid...');
-  if (!process.env.SENDGRID_API_KEY) {
-    console.warn('Thiếu SENDGRID_API_KEY trong biến môi trường');
-  }
-  return nodemailer.createTransport({
-    host: 'smtp.sendgrid.net',
-    port: 587,
-    secure: false,
-    auth: {
-      user: 'apikey', // SendGrid yêu cầu chuỗi 'apikey' là username
-      pass: process.env.SENDGRID_API_KEY,
-    },
-    tls: {
-      rejectUnauthorized: false
-    },
-    connectionTimeout: 30000, // 30 giây
-    greetingTimeout: 15000,   // 15 giây
-    socketTimeout: 30000,     // 30 giây
-    pool: true,
-    maxConnections: 3,
-    maxMessages: 50,
-    rateDelta: 20000,
-    rateLimit: 3
-  });
-};
+const logPrefix = '[EmailService/SendGridAPI]';
 
-const transporter = createTransporter();
+// Configure SendGrid API key once at startup
+if (process.env.SENDGRID_API_KEY) {
+  sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+} else {
+  console.warn(`${logPrefix} Missing SENDGRID_API_KEY in environment`);
+}
 
-// Hàm retry với exponential backoff
+// Helper: retry with exponential backoff
 const sendEmailWithRetry = async (emailOptions, maxRetries = 3) => {
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     try {
-      console.log(`Lần thử ${attempt}/${maxRetries} gửi email...`);
-      
-      // Tạo transporter mới cho mỗi lần thử (tránh connection cũ bị lỗi)
-      const currentTransporter = createTransporter();
-      
-      const data = await currentTransporter.sendMail(emailOptions);
-      console.log(`Email đã gửi thành công ở lần thử ${attempt}`);
-      return data;
-      
-    } catch (error) {
-      console.error(`Lần thử ${attempt} thất bại:`, error.message);
-      
-      if (attempt === maxRetries) {
-        throw error; // Ném lỗi nếu đã thử hết lần
+      console.log(`${logPrefix} Attempt ${attempt}/${maxRetries} sending email...`);
+
+      const fromEmail = process.env.SENDGRID_SENDER_EMAIL;
+      const fromName = process.env.SENDGRID_FROM_NAME || 'My Pet';
+      if (!fromEmail) {
+        throw new Error('Missing SENDGRID_SENDER_EMAIL in environment');
       }
-      
-      // Exponential backoff: chờ 2^attempt giây
+
+      const msg = {
+        to: emailOptions.to,
+        from: { email: fromEmail, name: fromName },
+        subject: emailOptions.subject || 'Notification',
+        text: emailOptions.text || 'You have a new message',
+        html: emailOptions.html || '<p>You have a new message</p>',
+      };
+
+      const resp = await sgMail.send(msg);
+      console.log(`${logPrefix} Email sent successfully`, {
+        statusCode: resp?.[0]?.statusCode,
+      });
+      return resp?.[0];
+    } catch (error) {
+      console.error(`${logPrefix} Attempt ${attempt} failed:`, error?.message || error);
+      if (error?.response?.body) {
+        console.error(error.response.body);
+      }
+      if (attempt === maxRetries) throw error;
       const delay = Math.pow(2, attempt) * 1000;
-      console.log(`Chờ ${delay}ms trước khi thử lại...`);
-      await new Promise(resolve => setTimeout(resolve, delay));
+      console.log(`${logPrefix} Waiting ${delay}ms before retry...`);
+      await new Promise((resolve) => setTimeout(resolve, delay));
     }
   }
 };
 
 exports.sendOTPEmail = async (email, otpCode) => {
   try {
-    console.log(`Bắt đầu gửi email OTP đến: ${email}`);
-    
-    // Kiểm tra biến môi trường cho SendGrid
+    console.log(`${logPrefix} Sending OTP email to: ${email}`);
+
     if (!process.env.SENDGRID_API_KEY || !process.env.SENDGRID_SENDER_EMAIL) {
-      throw new Error('Thiếu cấu hình SendGrid (SENDGRID_API_KEY hoặc SENDGRID_SENDER_EMAIL)');
+      throw new Error('Missing SendGrid config (SENDGRID_API_KEY or SENDGRID_SENDER_EMAIL)');
     }
 
     const emailOptions = {
-      from: `"${
-        process.env.SENDGRID_FROM_NAME || 'My Pet'
-      }" <${process.env.SENDGRID_SENDER_EMAIL}>`,
       to: email,
       subject: '🐾 Kích Hoạt Tài Khoản My Pet của bạn',
       html: `
@@ -100,33 +85,28 @@ exports.sendOTPEmail = async (email, otpCode) => {
             </p>
           </div>
         </div>
-      `
+      `,
     };
-    
+
     const data = await sendEmailWithRetry(emailOptions);
-    console.log(`Email OTP đã gửi thành công đến ${email}:`, data.response);
+    console.log(`${logPrefix} OTP email sent to ${email}:`, data?.statusCode);
     return data;
-    
   } catch (error) {
-    console.error(`Lỗi gửi email OTP đến ${email}:`, error.message);
+    console.error(`${logPrefix} Error sending OTP email to ${email}:`, error?.message || error);
     throw error;
   }
 };
-  
+
 // Gửi email OTP đặt lại mật khẩu
 exports.sendResetPasswordEmail = async (email, otpCode) => {
   try {
-    console.log(`Bắt đầu gửi email reset password đến: ${email}`);
-    
-    // Kiểm tra biến môi trường cho SendGrid
+    console.log(`${logPrefix} Sending reset password email to: ${email}`);
+
     if (!process.env.SENDGRID_API_KEY || !process.env.SENDGRID_SENDER_EMAIL) {
-      throw new Error('Thiếu cấu hình SendGrid (SENDGRID_API_KEY hoặc SENDGRID_SENDER_EMAIL)');
+      throw new Error('Missing SendGrid config (SENDGRID_API_KEY or SENDGRID_SENDER_EMAIL)');
     }
 
     const emailOptions = {
-      from: `"${
-        process.env.SENDGRID_FROM_NAME || 'My Pet'
-      }" <${process.env.SENDGRID_SENDER_EMAIL}>`,
       to: email,
       subject: '🔑 Mã Đặt Lại Mật Khẩu My Pet',
       html: `
@@ -156,15 +136,14 @@ exports.sendResetPasswordEmail = async (email, otpCode) => {
             </p>
           </div>
         </div>
-      `
+      `,
     };
-    
+
     const data = await sendEmailWithRetry(emailOptions);
-    console.log(`Email reset password đã gửi thành công đến ${email}:`, data.response);
+    console.log(`${logPrefix} Reset password email sent to ${email}:`, data?.statusCode);
     return data;
-    
   } catch (error) {
-    console.error(`Lỗi gửi email reset password đến ${email}:`, error.message);
+    console.error(`${logPrefix} Error sending reset password email to ${email}:`, error?.message || error);
     throw error;
   }
 };
