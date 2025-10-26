@@ -34,10 +34,10 @@ const userSchema = new mongoose.Schema(
 );
 
 // ---------- Indexes ----------
-userSchema.index({ email: 1 }, { unique: true, sparse: true });
-userSchema.index({ username: 1 }, { unique: true });
-userSchema.index({ role: 1 });
-userSchema.index({ primaryClinicId: 1 });
+// userSchema.index({ email: 1 }, { unique: true, sparse: true });
+// userSchema.index({ username: 1 }, { unique: true });
+// userSchema.index({ role: 1 });
+// userSchema.index({ primaryClinicId: 1 });
 
 // ---------- Hooks ----------
 userSchema.pre('save', async function (next) {
