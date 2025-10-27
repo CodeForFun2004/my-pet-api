@@ -30,9 +30,10 @@ const sendgridRoutes = require('./routes/sendgrid.routes');
 const app = express();
 // Configure CORS explicitly
 app.use(cors({
-  origin: ['http://localhost:5173', 'http://10.0.2.2:8080', 'http://10.0.2.2'], // Allow emulator and local origins
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], // Explicitly allow methods
-  allowedHeaders: ['Content-Type', 'Authorization'], // Allow Authorization header
+  origin: ['http://localhost:5173', 'http://10.0.2.2:8080', 'http://10.0.2.2', 'https://my-pet-fe.vercel.app'], 
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true, // Thêm dòng này nếu FE gửi cookie/session
 }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
