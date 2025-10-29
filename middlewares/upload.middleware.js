@@ -24,16 +24,20 @@ const createUploadMiddleware = ({
           if (doc?.[nameField]) {
             folderName = doc[nameField];
           }
-        } 
+        }
         // Nếu không có id (tạo mới), dùng fallback hoặc body nếu có
         else if (req.body && req.body[nameField]) {
           folderName = req.body[nameField];
         }
       } catch (err) {
-        console.warn('[Upload Middleware] Warning:', err.message);
+        console.warn("[Upload Middleware] Warning:", err.message);
       }
 
-      folderName = folderName.toString().trim().replace(/\s+/g, '-').toLowerCase();
+      folderName = folderName
+        .toString()
+        .trim()
+        .replace(/\s+/g, "-")
+        .toLowerCase();
 
       return {
         folder: `${folderPrefix}/${folderName}`,
@@ -59,26 +63,36 @@ const createUploadMiddlewareForStore = ({
       let folderName = "unknown";
 
       try {
+        // Nếu có user đăng nhập (protect đã gán req.user)
+        if (req.user && req.user.id) {
+          folderName = req.user.id;
+        }
         // Ưu tiên req.params.id nếu có (cho update)
-        if (model && req.params?.id) {
+        else if (model && req.params?.id) {
           const doc = await model.findById(req.params.id).lean();
           if (doc?.[nameField]) {
             folderName = doc[nameField];
           }
-        } 
+        }
         // Nếu không có id (tạo mới), dùng req.body[nameField]
         else if (req.body && req.body[nameField]) {
           folderName = req.body[nameField];
         } else {
-          console.warn(`[Upload Middleware] ${nameField} not found in req.body`);
+          console.warn(
+            `[Upload Middleware] ${nameField} not found in req.body`
+          );
           folderName = `unnamed-${Date.now()}`; // Fallback an toàn
         }
       } catch (err) {
-        console.error('[Upload Middleware] Error:', err.message);
+        console.error("[Upload Middleware] Error:", err.message);
         folderName = `error-${Date.now()}`; // Fallback nếu có lỗi
       }
 
-      folderName = folderName.toString().trim().replace(/\s+/g, '-').toLowerCase();
+      folderName = folderName
+        .toString()
+        .trim()
+        .replace(/\s+/g, "-")
+        .toLowerCase();
 
       return {
         folder: `${folderPrefix}/${folderName}`,
@@ -91,17 +105,16 @@ const createUploadMiddlewareForStore = ({
 
   return multer({
     storage,
-    limits: { fileSize: 5 * 1024 * 1024 }, // Giới hạn 5MB
+    limits: { fileSize: 2 * 1024 * 1024 }, // Giới hạn 2MB
     fileFilter: (req, file, cb) => {
       const filetypes = /jpeg|jpg|png/;
       const extname = filetypes.test(file.mimetype.toLowerCase());
       if (extname) {
         return cb(null, true);
       }
-      cb(new Error('Chỉ hỗ trợ file JPG hoặc PNG'));
+      cb(new Error("Chỉ hỗ trợ file JPG hoặc PNG"));
     },
   });
 };
 
 module.exports = createUploadMiddleware;
-

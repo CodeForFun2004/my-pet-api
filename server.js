@@ -21,6 +21,7 @@ const doctorScheduleRoutes = require('./routes/doctorSchedule.routes');
 const appointmentRoutes = require('./routes/appointment.routes');
 const encounterRoutes = require('./routes/encounter.routes');
 const sendgridRoutes = require('./routes/sendgrid.routes');
+const forumRoutes = require('./routes/post.routes');
 
 
 
@@ -59,6 +60,7 @@ app.use('/api/doctor-schedules', doctorScheduleRoutes);
 app.use('/api/appointments', appointmentRoutes);
 app.use('/api/encounters', encounterRoutes);
 app.use('/api/email-test', sendgridRoutes);
+app.use('/api/forum', forumRoutes);
 
 
 
