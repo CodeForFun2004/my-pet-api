@@ -103,36 +103,89 @@ exports.updatePost = async (req, res) => {
   try {
     const { postId } = req.params;
     const { content, tags, address, keepImages } = req.body;
+    
+    console.log('====================');
+    console.log('UPDATE POST DEBUG:');
+    console.log('postId:', postId);
+    console.log('req.body:', JSON.stringify(req.body, null, 2));
+    console.log('req.files:', req.files);
+    console.log('keepImages RAW:', keepImages);
+    console.log('keepImages type:', typeof keepImages);
+    console.log('====================');
+    
     const post = await Post.findById(postId);
 
     if (!post) return res.status(404).json({ error: "Post not found" });
     if (post.author.toString() !== req.user.id)
       return res.status(403).json({ error: "Forbidden" });
 
-    // Parse danh sách url ảnh cũ mà muốn giữ lại do frontend gửi lên
-    let keepImageUrls = [];
+    console.log('Current post images in DB:', post.images);
+
+    // ✅ Bước 1: Parse keepImages từ JSON string (nếu gửi từ FormData)
+    let imagesToKeep = [];
     if (keepImages) {
-      try {
-        keepImageUrls = JSON.parse(keepImages);
-      } catch {}
+      if (typeof keepImages === 'string') {
+        try {
+          imagesToKeep = JSON.parse(keepImages);
+          console.log('✅ Parsed keepImages as JSON string:', imagesToKeep);
+        } catch (e) {
+          imagesToKeep = [keepImages]; // Nếu chỉ là 1 URL string
+          console.log('⚠️ Cannot parse as JSON, treating as single URL:', imagesToKeep);
+        }
+      } else if (Array.isArray(keepImages)) {
+        imagesToKeep = keepImages;
+        console.log('✅ keepImages is already an array:', imagesToKeep);
+      }
+    } else {
+      console.log('⚠️ No keepImages received from frontend!');
     }
 
-    // Parse url các ảnh mới vừa upload (req.files do multer xử lý)
-    const newImageUrls = req.files ? req.files.map(file => file.path) : [];
+    console.log('Parsed imagesToKeep:', imagesToKeep);
 
-    // ✅ Cập nhật: LUÔN set lại array ảnh từ keepImages + newImageUrls
-    post.images = [...keepImageUrls, ...newImageUrls];
+    // ✅ Bước 2: Upload ảnh mới lên Cloudinary (nếu có)
+    let newImageUrls = [];
+    if (req.files && req.files.length > 0) {
+      newImageUrls = req.files.map(file => file.path);
+      console.log('New images uploaded:', newImageUrls);
+    } else {
+      console.log('No new images uploaded');
+    }
+
+    // ✅ Bước 3: MERGE: imagesToKeep + newImageUrls
+    const finalImages = [...imagesToKeep, ...newImageUrls];
+
+    console.log('Final images to save:', finalImages);
+    console.log('  - Kept from old:', imagesToKeep.length);
+    console.log('  - Newly uploaded:', newImageUrls.length);
+    console.log('  - Total:', finalImages.length);
+
+    // Update post với finalImages (không ghi đè mất ảnh cũ)
+    post.images = finalImages;
 
     // Update các trường khác
     if (content !== undefined) post.content = content;
+    
     if (tags) {
-      try { post.tags = JSON.parse(tags); } catch { post.tags = tags; }
+      if (typeof tags === 'string') {
+        try { 
+          post.tags = JSON.parse(tags); 
+        } catch { 
+          post.tags = tags; 
+        }
+      } else if (Array.isArray(tags)) {
+        post.tags = tags;
+      }
     }
+    
     if (address !== undefined) post.address = address;
 
     await post.save();
 
     const updated = await post.populate("author", "username avatar");
+    
+    console.log('Updated post images:', updated.images);
+    console.log('=============================');
+    
     res.json(formatPost(updated, req.user.id));
   } catch (err) {
     console.error("UPDATE POST ERROR:", err);
