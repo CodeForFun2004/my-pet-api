@@ -8,6 +8,7 @@ function formatPost(post, currentUserId) {
     content: post.content,
     images: post.images,
     tags: post.tags,
+    address: post.address,
     likeCount: post.likes.length,
     favoriteCount: post.favorites.length,
     commentCount: post.comments.length,
@@ -68,7 +69,7 @@ exports.getPostById = async (req, res) => {
 // 🔹 POST /api/forum/posts
 exports.createPost = async (req, res) => {
   try {
-    const { content, tags } = req.body;
+    const { content, tags , address} = req.body;
     const userId = req.user.id;
 
     if (!content || content.trim().length < 1)
@@ -76,12 +77,14 @@ exports.createPost = async (req, res) => {
 
     // Nếu upload nhiều ảnh
     const imageUrls = req.files ? req.files.map(file => file.path) : [];
+    const addressTrimmed = req.body.address ? req.body.address.trim() : "";
 
     const newPost = new Post({
       author: userId,
       content,
       images: imageUrls, // mảng URL từ Cloudinary
       tags,
+      address: addressTrimmed,
     });
 
     await newPost.save();
@@ -99,7 +102,7 @@ exports.createPost = async (req, res) => {
 exports.updatePost = async (req, res) => {
   try {
     const { postId } = req.params;
-    const { content, tags } = req.body;
+    const { content, tags, address } = req.body;
     const post = await Post.findById(postId);
 
     if (!post) return res.status(404).json({ error: "Post not found" });
@@ -113,6 +116,7 @@ exports.updatePost = async (req, res) => {
     post.images = newImageUrls.length > 0 ? newImageUrls : post.images;
     post.content = content ?? post.content;
     post.tags = tags ?? post.tags;
+    post.address = address ?? post.address;
 
     await post.save();
 

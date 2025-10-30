@@ -14,6 +14,7 @@ const postSchema = new mongoose.Schema(
     content: { type: String, required: true },
     images: [{ type: String }],
     tags: [{ type: String }],
+      address: { type: String   },
     likes: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
     favorites: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
     comments: [commentSchema],
