@@ -102,53 +102,33 @@ exports.createPost = async (req, res) => {
 exports.updatePost = async (req, res) => {
   try {
     const { postId } = req.params;
-    const { content, tags, address, keepImages } = req.body; // 👈 Thêm keepImages
+    const { content, tags, address, keepImages } = req.body;
     const post = await Post.findById(postId);
 
     if (!post) return res.status(404).json({ error: "Post not found" });
     if (post.author.toString() !== req.user.id)
       return res.status(403).json({ error: "Forbidden" });
 
-    // Xử lý upload ảnh mới (nếu có) - multer đã upload lên Cloudinary
-    const newImageUrls = req.files ? req.files.map(file => file.path) : [];
-    
-    // ✅ Parse keepImages từ JSON string
+    // Parse danh sách url ảnh cũ mà muốn giữ lại do frontend gửi lên
     let keepImageUrls = [];
     if (keepImages) {
       try {
         keepImageUrls = JSON.parse(keepImages);
-        console.log('UPDATE POST: keepImages parsed:', keepImageUrls.length, 'images');
-      } catch (e) {
-        console.error('Error parsing keepImages:', e);
-      }
+      } catch {}
     }
 
-    // ✅ GỘP ảnh cũ (muốn giữ) + ảnh mới (vừa upload)
-    if (newImageUrls.length > 0 || keepImageUrls.length > 0) {
-      post.images = [...keepImageUrls, ...newImageUrls];
-      console.log('UPDATE POST: Merged images:', {
-        kept: keepImageUrls.length,
-        new: newImageUrls.length,
-        total: post.images.length
-      });
-    }
-    // Nếu không có cả 2 → có thể giữ nguyên hoặc clear
-    // Option 1: Giữ nguyên (default behavior)
-    // Option 2: Clear images nếu user xóa hết: post.images = []
+    // Parse url các ảnh mới vừa upload (req.files do multer xử lý)
+    const newImageUrls = req.files ? req.files.map(file => file.path) : [];
 
-    // Update các field khác
-    post.content = content ?? post.content;
-    
-    // ✅ Parse tags nếu là JSON string
+    // ✅ Cập nhật: LUÔN set lại array ảnh từ keepImages + newImageUrls
+    post.images = [...keepImageUrls, ...newImageUrls];
+
+    // Update các trường khác
+    if (content !== undefined) post.content = content;
     if (tags) {
-      try {
-        post.tags = JSON.parse(tags);
-      } catch (e) {
-        post.tags = tags; // Fallback nếu không phải JSON
-      }
+      try { post.tags = JSON.parse(tags); } catch { post.tags = tags; }
     }
-    
-    post.address = address ?? post.address;
+    if (address !== undefined) post.address = address;
 
     await post.save();
 
