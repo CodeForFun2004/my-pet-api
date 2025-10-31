@@ -16,6 +16,7 @@ const userSchema = new mongoose.Schema(
     introduction: { type: String },
     workAt: { type: String },
     studyAt: { type: String },
+    studiedAt: { type: String },
     liveAt: { type: String },
     from: { type: String },
     address: { type: String },
