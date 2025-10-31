@@ -55,7 +55,7 @@ router.get('/me', protect, getCurrentUser);
 router.get('/filter', protect, isAdmin, filterUsersByRole);
 
 // PUT /api/users/:id/avatar  (Private: admin hoặc chính chủ) - cập nhật avatar
-router.put('/:id/avatar', protect, uploadUserAvatar.single('avatar'), updateUserAvatar);
+// router.put('/:id/avatar', protect, uploadUserAvatar.single('avatar'), updateUserAvatar);
 
 // GET /api/users/:id  (Private: admin hoặc chính chủ) - xem chi tiết user
 router.get('/:id', protect, getUserById);
