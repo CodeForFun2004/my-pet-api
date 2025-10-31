@@ -154,7 +154,16 @@ async function destroyCloudinaryByUrl(url) {
 
 exports.updateUser = async (req, res) => {
   try {
-    const targetId = req.params.id;
+    const targetIdRaw = req.params.id;
+    const targetId = typeof targetIdRaw === 'string' ? targetIdRaw.trim() : '';
+
+    // Log để xem id thực sự server nhận là gì
+    console.log('updateUser targetId raw =', JSON.stringify(targetIdRaw));
+    console.log('updateUser targetId trim =', targetId, 'len=', targetId.length);
+
+    if (!mongoose.isValidObjectId(targetId)) {
+      return res.status(400).json({ message: 'Invalid user id' });
+    }
     const user = await User.findById(targetId);
     if (!user) return res.status(404).json({ message: 'User not found' });
 

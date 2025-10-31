@@ -68,6 +68,14 @@ router.put(
     { name: 'avatar', maxCount: 1 },
     { name: 'backgroundImg', maxCount: 1 }
   ]),
+  (req, res, next) => {
+  console.log('---UpdateUser incoming---');
+  console.log('params.id =', req.params.id);
+  console.log('content-type =', req.headers['content-type']);
+  console.log('body =', req.body);
+  console.log('files =', JSON.stringify(req.files, null, 2));
+  next();
+},
   updateUser
 );
 
