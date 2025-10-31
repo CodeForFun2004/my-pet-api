@@ -74,6 +74,7 @@ router.put(
   console.log('content-type =', req.headers['content-type']);
   console.log('body =', req.body);
   console.log('files =', JSON.stringify(req.files, null, 2));
+  console.log('FILE (single) =', req.file); // <— thêm dòng này
   next();
 },
   updateUser
