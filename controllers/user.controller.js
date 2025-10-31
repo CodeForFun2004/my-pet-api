@@ -2,6 +2,7 @@
 const User = require('../models/user.model');
 const { ROLES } = require('../models/user.model');
 const Clinic = require('../models/clinic.model'); // Đảm bảo bạn đã import mô hình Clinic
+const cloudinary = require('../config/cloudinary');
 
 // @desc    Get all users (optional: ?page=&limit=&role=)
 // @route   GET /api/users
@@ -135,6 +136,22 @@ exports.getUserById = async (req, res) => {
 // @desc    Update user
 // @route   PUT /api/users/:id
 // @access  Admin or same user
+// controllers/user.controller.js
+// Helper: xóa file cũ trên Cloudinary từ URL đầy đủ
+// Ví dụ URL: https://res.cloudinary.com/<cloud>/image/upload/v1699999999/my-pet/avatars/users/username_xyz.jpg
+// public_id cần destroy: my-pet/avatars/users/username_xyz
+async function destroyCloudinaryByUrl(url) {
+  try {
+    if (!url) return;
+    const m = url.match(/\/upload\/(?:v\d+\/)?(.+?)\.[a-z0-9]+$/i);
+    if (!m) return;
+    const publicId = m[1];
+    await cloudinary.uploader.destroy(publicId);
+  } catch (e) {
+    console.warn('Không thể xóa file cũ trên Cloudinary:', e.message);
+  }
+}
+
 exports.updateUser = async (req, res) => {
   try {
     const targetId = req.params.id;
@@ -146,21 +163,67 @@ exports.updateUser = async (req, res) => {
     if (!isAdmin && !isSelf) return res.status(403).json({ message: 'Forbidden' });
 
     const {
-      fullname, phone, address, avatar, email, password,
+      fullname,
+      phone,
+      address,
+      email,
+      password,
+      avatar,          // Optional: cho phép set URL thủ công (không upload file)
+      backgroundImg,   // Optional: cho phép set URL thủ công
+      introduction,
+      workAt,
+      studyAt,
+      liveAt,
+      from,
+
       // admin-only
-      role, clinicsOwned, primaryClinicId, doctorProfileId,
-      isBanned, banReason, banExpires
+      role,
+      clinicsOwned,
+      primaryClinicId,
+      doctorProfileId,
+      isBanned,
+      banReason,
+      banExpires
     } = req.body;
 
-    // self-edit fields
+    // -------- Files từ middleware .fields([...]) --------
+    // Nếu bạn gọi route với:
+    // uploadUserFiles.fields([{ name: 'avatar', maxCount: 1 }, { name: 'backgroundImg', maxCount: 1 }])
+    const uploadedAvatarPath = req?.files?.avatar?.[0]?.path;
+    const uploadedBgPath     = req?.files?.backgroundImg?.[0]?.path;
+
+    // ---- Xử lý avatar ----
+    if (uploadedAvatarPath) {
+      if (user.avatar) await destroyCloudinaryByUrl(user.avatar);
+      user.avatar = uploadedAvatarPath;
+    } else if (avatar !== undefined) {
+      // Cho phép update qua URL text
+      user.avatar = avatar;
+    }
+
+    // ---- Xử lý backgroundImg ----
+    if (uploadedBgPath) {
+      if (user.backgroundImg) await destroyCloudinaryByUrl(user.backgroundImg);
+      user.backgroundImg = uploadedBgPath;
+    } else if (backgroundImg !== undefined) {
+      user.backgroundImg = backgroundImg;
+    }
+
+    // ---- Cập nhật các trường cơ bản ----
     if (fullname !== undefined) user.fullname = fullname;
     if (phone !== undefined) user.phone = phone;
     if (address !== undefined) user.address = address;
-    if (avatar !== undefined) user.avatar = avatar;
     if (email !== undefined) user.email = email?.toLowerCase().trim();
-    if (password) user.password = password; // set plain; pre('save') sẽ hash
+    if (password) user.password = password; // pre('save') sẽ tự hash
 
-    // admin-only edits
+    // ---- Các trường hồ sơ mới ----
+    if (introduction !== undefined) user.introduction = introduction;
+    if (workAt !== undefined) user.workAt = workAt;
+    if (studyAt !== undefined) user.studyAt = studyAt;
+    if (liveAt !== undefined) user.liveAt = liveAt;
+    if (from !== undefined) user.from = from;
+
+    // ---- Admin-only ----
     if (isAdmin) {
       if (role && ROLES.includes(role)) user.role = role;
       if (clinicsOwned !== undefined) user.clinicsOwned = Array.isArray(clinicsOwned) ? clinicsOwned : [];
@@ -168,7 +231,9 @@ exports.updateUser = async (req, res) => {
       if (doctorProfileId !== undefined) user.doctorProfileId = doctorProfileId || null;
       if (isBanned !== undefined) user.isBanned = !!isBanned;
       if (banReason !== undefined) user.banReason = banReason ?? null;
-      if (banExpires !== undefined) user.banExpires = banExpires ?? null;
+      if (banExpires !== undefined) {
+        user.banExpires = banExpires ? new Date(banExpires) : null;
+      }
     }
 
     const updatedUser = await user.save();
@@ -178,13 +243,14 @@ exports.updateUser = async (req, res) => {
       user: updatedUser
     });
   } catch (err) {
-    if (err && err.code === 11000) {
+    if (err?.code === 11000) {
       const field = Object.keys(err.keyValue || {})[0];
       return res.status(400).json({ message: `Duplicate ${field}` });
     }
     res.status(500).json({ message: 'Failed to update user', error: err.message });
   }
 };
+
 
 // @desc    Update user avatar only (Cloudinary-compatible)
 // @route   PUT /api/users/:id/avatar

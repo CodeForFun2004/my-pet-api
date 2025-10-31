@@ -24,6 +24,17 @@ const uploadUserAvatar = upload({
   nameField: 'username'
 });
 
+const uploadUserFiles = upload({
+  folderPrefix: (fieldname) => {
+    if (fieldname === 'avatar') return 'my-pet/avatars/users';
+    if (fieldname === 'backgroundImg') return 'my-pet/backgrounds/users';
+    return 'my-pet/users';
+  },
+  model: User,
+  nameField: 'username'
+});
+
+
 /**
  * Lưu ý:
  * - CHỈ import những handler thực sự tồn tại.
@@ -50,7 +61,15 @@ router.put('/:id/avatar', protect, uploadUserAvatar.single('avatar'), updateUser
 router.get('/:id', protect, getUserById);
 
 // PUT /api/users/:id  (Private: admin hoặc chính chủ) - cập nhật user (controller tự guard)
-router.put('/:id', protect, uploadUserAvatar.single('avatar'), updateUser);
+router.put(
+  '/:id',
+  protect,
+  uploadUserFiles.fields([
+    { name: 'avatar', maxCount: 1 },
+    { name: 'backgroundImg', maxCount: 1 }
+  ]),
+  updateUser
+);
 
 // DELETE /api/users/:id  (Admin) - xoá user
 router.delete('/:id', protect, isAdmin, deleteUser);
