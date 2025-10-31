@@ -185,6 +185,7 @@ exports.updateUser = async (req, res) => {
       introduction,
       workAt,
       studyAt,
+      studiedAt,
       liveAt,
       from,
 
@@ -232,6 +233,7 @@ exports.updateUser = async (req, res) => {
     if (introduction !== undefined) user.introduction = introduction;
     if (workAt !== undefined) user.workAt = workAt;
     if (studyAt !== undefined) user.studyAt = studyAt;
+    if (studiedAt !== undefined) user.studiedAt = studiedAt;
     if (liveAt !== undefined) user.liveAt = liveAt;
     if (from !== undefined) user.from = from;
 
