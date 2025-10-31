@@ -83,4 +83,13 @@ router.put(
 // DELETE /api/users/:id  (Admin) - xoá user
 router.delete('/:id', protect, isAdmin, deleteUser);
 
+router.post(
+  '/_diag/multipart',
+  uploadUserFiles.any(),
+  (req, res) => {
+    console.log('DIAG FILES', req.files);
+    res.json({ ok: true, files: req.files });
+  }
+);
+
 module.exports = router;
