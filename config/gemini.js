@@ -1,4 +1,4 @@
-// config/aisetup.js
+// config/gemini.js
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 require('dotenv').config();
 
@@ -7,7 +7,7 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 /**
  * Hàm tổng quát để gửi yêu cầu đến Gemini với dữ liệu và câu hỏi của người dùng.
- * @param {object} contextData - Dữ liệu ngữ cảnh (ví dụ: sản phẩm, danh mục, voucher, discount) dưới dạng đối tượng JSON.
+ * @param {object} contextData - Dữ liệu ngữ cảnh (phòng khám, bác sĩ, thú cưng, dịch vụ) dưới dạng đối tượng JSON.
  * @param {string} userPrompt - Câu hỏi của người dùng.
  * @param {string} systemInstruction - Hướng dẫn cho AI về vai trò của nó và cách phản hồi.
  * @returns {Promise<string>} - Chuỗi phản hồi từ Gemini.

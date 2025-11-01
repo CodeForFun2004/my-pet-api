@@ -22,7 +22,7 @@ const appointmentRoutes = require('./routes/appointment.routes');
 const encounterRoutes = require('./routes/encounter.routes');
 const sendgridRoutes = require('./routes/sendgrid.routes');
 const forumRoutes = require('./routes/post.routes');
-
+const geminiRoutes = require('./routes/chatbot.routes'); // Import routes chatbot
 
 
 
@@ -61,6 +61,7 @@ app.use('/api/appointments', appointmentRoutes);
 app.use('/api/encounters', encounterRoutes);
 app.use('/api/email-test', sendgridRoutes);
 app.use('/api/forum', forumRoutes);
+app.use('/api/chatbot', geminiRoutes); // Sử dụng routes chatbot
 
 
 
