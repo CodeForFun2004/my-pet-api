@@ -1,0 +1,135 @@
+[
+  {
+    "_id": { "$oid": "507f1f77bcf86cd799439031" },
+    "userId": { "$oid": "507f1f77bcf86cd799439021" },
+    "clinicId": { "$oid": "507f1f77bcf86cd799439041" },
+    "specialties": ["Restoractive Dentist", "MBBS", "MD", "MRCOG", "DFSRH"],
+    "bio": "Tiến sĩ Nguyễn Văn Nam là chuyên gia sinh sản được đào tạo quốc tế với hơn 25 năm kinh nghiệm trong lĩnh vực hỗ trợ sinh sản. Ông đã thực hiện thành công hàng nghìn ca IVF và được công nhận là một trong những chuyên gia hàng đầu trong lĩnh vực này.",
+    "experienceYears": 25,
+    "scheduleTemplate": {
+      "slotDurationMin": 30,
+      "workingDays": {
+        "mon": [{ "start": "08:00", "end": "11:30" }, { "start": "13:30", "end": "17:00" }],
+        "tue": [{ "start": "08:00", "end": "11:30" }, { "start": "13:30", "end": "17:00" }],
+        "wed": [{ "start": "08:00", "end": "11:30" }, { "start": "13:30", "end": "17:00" }],
+        "thu": [{ "start": "08:00", "end": "11:30" }, { "start": "13:30", "end": "17:00" }],
+        "fri": [{ "start": "08:00", "end": "11:30" }, { "start": "13:30", "end": "17:00" }]
+      },
+      "breakRules": [{ "start": "11:30", "end": "11:50" }],
+      "maxConcurrent": 1
+    },
+    "createdAt": { "$date": "2024-01-01T00:00:00.000Z" },
+    "updatedAt": { "$date": "2024-01-01T00:00:00.000Z" }
+  },
+  {
+    "_id": { "$oid": "507f1f77bcf86cd799439032" },
+    "userId": { "$oid": "507f1f77bcf86cd799439022" },
+    "clinicId": { "$oid": "507f1f77bcf86cd799439041" },
+    "specialties": ["Veterinary Surgeon", "DVM", "MS", "Diplomate ACVS"],
+    "bio": "Bs Trần Hà là bác sĩ phẫu thuật thú y có kinh nghiệm hơn 20 năm trong việc điều trị các bệnh lý phức tạp ở động vật. Bà chuyên về phẫu thuật chỉnh hình và phẫu thuật mô mềm.",
+    "experienceYears": 20,
+    "scheduleTemplate": {
+      "slotDurationMin": 30,
+      "workingDays": {
+        "mon": [{ "start": "08:00", "end": "11:30" }, { "start": "13:00", "end": "17:00" }],
+        "tue": [{ "start": "08:00", "end": "11:30" }, { "start": "13:00", "end": "17:00" }],
+        "wed": [{ "start": "08:00", "end": "11:30" }, { "start": "13:00", "end": "17:00" }],
+        "thu": [{ "start": "08:00", "end": "11:30" }, { "start": "13:00", "end": "17:00" }],
+        "fri": [{ "start": "08:00", "end": "11:30" }, { "start": "13:00", "end": "17:00" }]
+      },
+      "breakRules": [{ "start": "11:30", "end": "11:50" }],
+      "maxConcurrent": 1
+    },
+    "createdAt": { "$date": "2024-01-01T00:00:00.000Z" },
+    "updatedAt": { "$date": "2024-01-01T00:00:00.000Z" }
+  },
+  {
+    "_id": { "$oid": "507f1f77bcf86cd799439033" },
+    "userId": { "$oid": "507f1f77bcf86cd799439023" },
+    "clinicId": { "$oid": "507f1f77bcf86cd799439041" },
+    "specialties": ["Internal Medicine Specialist", "DVM", "PhD", "Diplomate ACVIM"],
+    "bio": "Bs Cao Toàn Mỹ chuyên về nội khoa thú y với kinh nghiệm 15 năm trong chẩn đoán và điều trị các bệnh lý nội khoa phức tạp ở động vật.",
+    "experienceYears": 15,
+    "scheduleTemplate": {
+      "slotDurationMin": 30,
+      "workingDays": {
+        "mon": [{ "start": "10:00", "end": "11:30" }, { "start": "15:00", "end": "17:00" }],
+        "tue": [{ "start": "10:00", "end": "11:30" }, { "start": "15:00", "end": "17:00" }],
+        "wed": [{ "start": "10:00", "end": "11:30" }, { "start": "15:00", "end": "17:00" }],
+        "thu": [{ "start": "10:00", "end": "11:30" }, { "start": "15:00", "end": "17:00" }],
+        "fri": [{ "start": "10:00", "end": "11:30" }, { "start": "15:00", "end": "17:00" }]
+      },
+      "breakRules": [{ "start": "11:30", "end": "11:50" }],
+      "maxConcurrent": 1
+    },
+    "createdAt": { "$date": "2024-01-01T00:00:00.000Z" },
+    "updatedAt": { "$date": "2024-01-01T00:00:00.000Z" }
+  },
+  {
+    "_id": { "$oid": "507f1f77bcf86cd799439034" },
+    "userId": { "$oid": "507f1f77bcf86cd799439024" },
+    "clinicId": { "$oid": "507f1f77bcf86cd799439041" },
+    "specialties": ["Dermatology Specialist", "DVM", "Diplomate ACVD"],
+    "bio": "Bs Lục Văn Toán là chuyên gia da liễu thú y với kinh nghiệm 12 năm trong chẩn đoán và điều trị các bệnh lý da liễu phức tạp ở động vật.",
+    "experienceYears": 12,
+    "scheduleTemplate": {
+      "slotDurationMin": 30,
+      "workingDays": {
+        "mon": [{ "start": "09:00", "end": "11:30" }, { "start": "14:00", "end": "17:00" }],
+        "tue": [{ "start": "09:00", "end": "11:30" }, { "start": "14:00", "end": "17:00" }],
+        "wed": [{ "start": "09:00", "end": "11:30" }, { "start": "14:00", "end": "17:00" }],
+        "thu": [{ "start": "09:00", "end": "11:30" }, { "start": "14:00", "end": "17:00" }],
+        "fri": [{ "start": "09:00", "end": "11:30" }, { "start": "14:00", "end": "17:00" }]
+      },
+      "breakRules": [{ "start": "11:30", "end": "11:50" }],
+      "maxConcurrent": 1
+    },
+    "createdAt": { "$date": "2024-01-01T00:00:00.000Z" },
+    "updatedAt": { "$date": "2024-01-01T00:00:00.000Z" }
+  },
+  {
+    "_id": { "$oid": "507f1f77bcf86cd799439035" },
+    "userId": { "$oid": "507f1f77bcf86cd799439025" },
+    "clinicId": { "$oid": "507f1f77bcf86cd799439041" },
+    "specialties": ["Emergency Medicine", "DVM", "Diplomate ACVECC"],
+    "bio": "Bs Trần Văn Thụ chuyên về cấp cứu thú y với kinh nghiệm 18 năm trong xử lý các ca cấp cứu và phẫu thuật khẩn cấp.",
+    "experienceYears": 18,
+    "scheduleTemplate": {
+      "slotDurationMin": 30,
+      "workingDays": {
+        "mon": [{ "start": "08:00", "end": "11:30" }, { "start": "16:00", "end": "17:00" }],
+        "tue": [{ "start": "08:00", "end": "11:30" }, { "start": "16:00", "end": "17:00" }],
+        "wed": [{ "start": "08:00", "end": "11:30" }, { "start": "16:00", "end": "17:00" }],
+        "thu": [{ "start": "08:00", "end": "11:30" }, { "start": "16:00", "end": "17:00" }],
+        "fri": [{ "start": "08:00", "end": "11:30" }, { "start": "16:00", "end": "17:00" }]
+      },
+      "breakRules": [{ "start": "11:30", "end": "11:50" }],
+      "maxConcurrent": 1
+    },
+    "createdAt": { "$date": "2024-01-01T00:00:00.000Z" },
+    "updatedAt": { "$date": "2024-01-01T00:00:00.000Z" }
+  },
+  {
+    "_id": { "$oid": "507f1f77bcf86cd799439036" },
+    "userId": { "$oid": "507f1f77bcf86cd799439026" },
+    "clinicId": { "$oid": "507f1f77bcf86cd799439041" },
+    "specialties": ["Behavioral Medicine", "DVM", "Diplomate ACVB"],
+    "bio": "Bs Hà Thị Phương chuyên về hành vi thú y với kinh nghiệm 10 năm trong điều trị các vấn đề hành vi và tâm lý ở động vật.",
+    "experienceYears": 10,
+    "scheduleTemplate": {
+      "slotDurationMin": 30,
+      "workingDays": {
+        "mon": [{ "start": "10:00", "end": "11:30" }, { "start": "15:00", "end": "17:00" }],
+        "tue": [{ "start": "10:00", "end": "11:30" }, { "start": "15:00", "end": "17:00" }],
+        "wed": [{ "start": "10:00", "end": "11:30" }, { "start": "15:00", "end": "17:00" }],
+        "thu": [{ "start": "10:00", "end": "11:30" }, { "start": "15:00", "end": "17:00" }],
+        "fri": [{ "start": "10:00", "end": "11:30" }, { "start": "15:00", "end": "17:00" }]
+      },
+      "breakRules": [{ "start": "11:30", "end": "11:50" }],
+      "maxConcurrent": 1
+    },
+    "createdAt": { "$date": "2024-01-01T00:00:00.000Z" },
+    "updatedAt": { "$date": "2024-01-01T00:00:00.000Z" }
+  }
+]
+

@@ -1,0 +1,27 @@
+[
+  {
+    "_id": { "$oid": "507f1f77bcf86cd799439041" },
+    "name": "Phòng Khám Thú Y My Pet",
+    "address": "03 Hoàng Văn Thụ, Phường Phước Ninh, Quận Hải Châu, Thành phố Đà Nẵng",
+    "phone": "+84-236-123-456",
+    "ownerId": { "$oid": "507f1f77bcf86cd799439012" },
+    "timeZone": "Asia/Ho_Chi_Minh",
+    "cancelBeforeMinutes": 120,
+    "noShowMarkAfterMinutes": 15,
+    "createdAt": { "$date": "2024-01-01T00:00:00.000Z" },
+    "updatedAt": { "$date": "2024-01-01T00:00:00.000Z" }
+  },
+  {
+    "_id": { "$oid": "507f1f77bcf86cd799439042" },
+    "name": "Phòng Khám Thú Y Hồ Chí Minh",
+    "address": "123 Pet Care Street, District 1, Ho Chi Minh City",
+    "phone": "+84-28-123-456",
+    "ownerId": { "$oid": "507f1f77bcf86cd799439012" },
+    "timeZone": "Asia/Ho_Chi_Minh",
+    "cancelBeforeMinutes": 120,
+    "noShowMarkAfterMinutes": 15,
+    "createdAt": { "$date": "2024-01-01T00:00:00.000Z" },
+    "updatedAt": { "$date": "2024-01-01T00:00:00.000Z" }
+  }
+]
+
