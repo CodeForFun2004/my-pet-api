@@ -1,6 +1,7 @@
 const Doctor = require('../models/doctor.model');
 const Clinic = require('../models/clinic.model');
 const User = require('../models/user.model');
+const { getAvailability } = require('../services/availability.service');
 
 // Tạo bác sĩ: admin hoặc owner của clinic
 // - Liên kết user (role 'doctor') + set user.primaryClinicId + user.doctorProfileId
@@ -47,10 +48,58 @@ exports.createDoctor = async (req, res) => {
   }
 };
 
+// Helper function to format doctor response for frontend
+const formatDoctorResponse = async (doctor, includeSlots = false) => {
+  const user = doctor.userId;
+  const clinic = doctor.clinicId ? await Clinic.findById(doctor.clinicId).lean() : null;
+  
+  const formatted = {
+    id: doctor._id.toString(),
+    name: user?.fullname || `Bs ${user?.username || 'Unknown'}`,
+    specialization: doctor.specialties?.[0] || 'Thú y tổng quát',
+    profileImage: user?.avatar || 'https://pngimg.com/uploads/doctor/doctor_PNG15972.png',
+    experience: doctor.experienceYears ? `${doctor.experienceYears} năm kinh nghiệm` : 'Chưa có thông tin',
+    qualifications: doctor.specialties || [],
+    skills: doctor.specialties || [],
+    biography: doctor.bio || 'Chưa có thông tin',
+    phone: user?.phone || clinic?.phone || '',
+    address: clinic?.address || user?.address || '',
+    city: clinic?.address?.split(',')?.pop()?.trim() || 'Chưa có thông tin',
+    isActive: true,
+  };
+
+  // Thêm availableSlots nếu được yêu cầu
+  if (includeSlots) {
+    const slots = [];
+    const today = new Date();
+    for (let i = 0; i < 7; i++) {
+      const date = new Date(today);
+      date.setDate(date.getDate() + i);
+      const dateStr = date.toISOString().split('T')[0];
+      
+      try {
+        const availableSlots = await getAvailability(doctor._id.toString(), dateStr);
+        availableSlots.forEach(slot => {
+          slots.push({
+            date: dateStr,
+            time: slot.start,
+            available: true
+          });
+        });
+      } catch (err) {
+        console.error(`Error getting availability for ${dateStr}:`, err);
+      }
+    }
+    formatted.availableSlots = slots;
+  }
+
+  return formatted;
+};
+
 // Danh sách bác sĩ (admin: tất cả, owner: theo clinic của mình, others: 403)
 exports.getDoctors = async (req, res) => {
   try {
-    const { clinicId } = req.query;
+    const { clinicId, includeSlots } = req.query;
     let query = {};
     // if (req.user.role === 'admin') {
     //   if (clinicId) query.clinicId = clinicId;
@@ -64,7 +113,13 @@ exports.getDoctors = async (req, res) => {
     // }
 
     const doctors = await Doctor.find(query).populate('userId', 'username fullname email phone avatar').lean();
-    res.json({ items: doctors });
+    
+    // Format cho frontend
+    const formatted = await Promise.all(
+      doctors.map(doc => formatDoctorResponse(doc, includeSlots === 'true'))
+    );
+    
+    res.json(formatted);
   } catch (err) {
     res.status(500).json({ message: 'Failed to fetch doctors', error: err.message });
   }
@@ -80,7 +135,10 @@ exports.getDoctorById = async (req, res) => {
     //     && !(req.user.role === 'doctor' && req.user.doctorProfileId?.toString() === doc._id.toString())) {
     //   return res.status(403).json({ message: 'Forbidden' });
     // }
-    res.json(doc);
+    
+    // Format cho frontend (luôn include slots)
+    const formatted = await formatDoctorResponse(doc, true);
+    res.json(formatted);
   } catch (err) {
     res.status(500).json({ message: 'Failed to get doctor', error: err.message });
   }
