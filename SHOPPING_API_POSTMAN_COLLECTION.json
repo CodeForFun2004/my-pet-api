@@ -1,0 +1,276 @@
+{
+  "info": {
+    "name": "MyPet Shopping API",
+    "description": "API collection for Shopping features",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Products",
+      "item": [
+        {
+          "name": "Get All Products",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/products?page=1&limit=12&sortBy=createdAt&sortOrder=desc",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "products"],
+              "query": [
+                {"key": "page", "value": "1"},
+                {"key": "limit", "value": "12"},
+                {"key": "sortBy", "value": "createdAt"},
+                {"key": "sortOrder", "value": "desc"}
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Product By ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/products/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "products", ":id"],
+              "variable": [
+                {"key": "id", "value": "product_id_here"}
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create Product",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{adminToken}}"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Thức ăn hạt Canin cho chó\",\n  \"brand\": \"Royal Canin\",\n  \"price\": 450000,\n  \"originalPrice\": 520000,\n  \"image\": \"https://images.unsplash.com/photo-1601758228041-f3b2795255f1\",\n  \"description\": \"ROYAL CANIN INTENSE HAIRBALL...\",\n  \"category\": \"category_id\",\n  \"weight\": \"500g\",\n  \"inStock\": true,\n  \"stockQuantity\": 100\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/products",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "products"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Categories",
+      "item": [
+        {
+          "name": "Get All Categories",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/categories",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "categories"]
+            }
+          }
+        },
+        {
+          "name": "Create Category",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{adminToken}}"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Thức Ăn\",\n  \"image\": \"https://images.unsplash.com/photo-...\",\n  \"description\": \"Thức ăn dinh dưỡng cho thú cưng\",\n  \"order\": 0\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/categories",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "categories"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Cart",
+      "item": [
+        {
+          "name": "Get Cart",
+          "request": {
+            "method": "GET",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{userToken}}"}
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/cart",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "cart"]
+            }
+          }
+        },
+        {
+          "name": "Add to Cart",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{userToken}}"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"productId\": \"product_id\",\n  \"quantity\": 2,\n  \"color\": \"Xanh\",\n  \"size\": \"M\",\n  \"weight\": \"500g\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/cart/items",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "cart", "items"]
+            }
+          }
+        },
+        {
+          "name": "Remove from Cart",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{userToken}}"}
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/cart/items/0",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "cart", "items", "0"]
+            }
+          }
+        },
+        {
+          "name": "Clear Cart",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{userToken}}"}
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/cart",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "cart"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Orders",
+      "item": [
+        {
+          "name": "Get User Orders",
+          "request": {
+            "method": "GET",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{userToken}}"}
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/orders",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "orders"]
+            }
+          }
+        },
+        {
+          "name": "Create Order",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{userToken}}"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"items\": [\n    {\n      \"productId\": \"product_id\",\n      \"quantity\": 2,\n      \"color\": \"Xanh\",\n      \"size\": \"M\"\n    }\n  ],\n  \"shippingInfo\": {\n    \"fullName\": \"Nguyễn Văn A\",\n    \"phone\": \"0987654321\",\n    \"email\": \"test@example.com\",\n    \"address\": \"123 ABC\",\n    \"city\": \"HCM\",\n    \"district\": \"Q1\",\n    \"ward\": \"Phường 1\"\n  },\n  \"shippingOption\": {\n    \"id\": \"express\",\n    \"name\": \"Giao nhanh\",\n    \"price\": 60000,\n    \"description\": \"1-2 ngày\"\n  },\n  \"paymentMethod\": \"cod\",\n  \"promoCode\": \"SAVE10\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/orders",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "orders"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Coupons",
+      "item": [
+        {
+          "name": "Get All Coupons",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/coupons",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "coupons"]
+            }
+          }
+        },
+        {
+          "name": "Apply Coupon",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{userToken}}"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"code\": \"SAVE10\",\n  \"orderValue\": 500000\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/coupons/apply",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "coupons", "apply"]
+            }
+          }
+        },
+        {
+          "name": "Create Coupon (Admin)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{adminToken}}"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"code\": \"SAVE10\",\n  \"name\": \"Giảm 10%\",\n  \"discountType\": \"percentage\",\n  \"discountValue\": 10,\n  \"minOrderValue\": 0,\n  \"maxUsesPerUser\": 1,\n  \"validFrom\": \"2024-01-01T00:00:00.000Z\",\n  \"validUntil\": \"2024-12-31T23:59:59.999Z\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/coupons/admin",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "coupons", "admin"]
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080"
+    },
+    {
+      "key": "userToken",
+      "value": "your_user_jwt_token_here"
+    },
+    {
+      "key": "adminToken",
+      "value": "your_admin_jwt_token_here"
+    }
+  ]
+}
+
+
+
+
+
+
+
