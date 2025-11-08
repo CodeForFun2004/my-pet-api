@@ -28,6 +28,7 @@ const categoryRoutes = require('./routes/category.routes');
 const cartRoutes = require('./routes/cart.routes');
 const orderRoutes = require('./routes/order.routes');
 const couponRoutes = require('./routes/coupon.routes');
+const blogArticleRoutes = require('./routes/blogArticle.routes');
 
 const forumRoutes = require('./routes/post.routes');
 const geminiRoutes = require('./routes/chatbot.routes'); // Import routes chatbot
@@ -76,6 +77,7 @@ app.use('/api/categories', categoryRoutes);
 app.use('/api/cart', cartRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/coupons', couponRoutes);
+app.use('/api/blog-articles', blogArticleRoutes);
 app.use('/api/forum', forumRoutes);
 app.use('/api/chatbot', geminiRoutes); // Sử dụng routes chatbot
 app.use('/api/doctor-ai', doctorAIRoutes);

@@ -7,6 +7,11 @@ const Product = require('../models/product.model');
 // @access  Private
 exports.getCart = async (req, res) => {
   try {
+    // Validate user is authenticated
+    if (!req.user || !req.user.id) {
+      return res.status(401).json({ message: 'User not authenticated' });
+    }
+
     let cart = await Cart.findOne({ user: req.user.id })
       .populate('items.product');
 
@@ -18,7 +23,12 @@ exports.getCart = async (req, res) => {
 
     res.status(200).json(cart);
   } catch (err) {
-    res.status(500).json({ message: 'Failed to fetch cart', error: err.message });
+    console.error('Error fetching cart:', err);
+    res.status(500).json({ 
+      message: 'Failed to fetch cart', 
+      error: err.message,
+      stack: process.env.NODE_ENV === 'development' ? err.stack : undefined
+    });
   }
 };
 
@@ -27,7 +37,21 @@ exports.getCart = async (req, res) => {
 // @access  Private
 exports.addToCart = async (req, res) => {
   try {
-    const { productId, quantity, color, size, weight } = req.body;
+    // Validate user is authenticated
+    if (!req.user || !req.user.id) {
+      return res.status(401).json({ message: 'User not authenticated' });
+    }
+
+    const { productId, quantity = 1, color, size, weight } = req.body;
+
+    // Validate required fields
+    if (!productId) {
+      return res.status(400).json({ message: 'Product ID is required' });
+    }
+
+    if (!quantity || quantity < 1) {
+      return res.status(400).json({ message: 'Quantity must be at least 1' });
+    }
 
     // Validate product
     const product = await Product.findById(productId);
@@ -36,7 +60,10 @@ exports.addToCart = async (req, res) => {
     }
 
     if (!product.inStock || product.stockQuantity < quantity) {
-      return res.status(400).json({ message: 'Product out of stock' });
+      return res.status(400).json({ 
+        message: 'Product out of stock',
+        availableStock: product.stockQuantity 
+      });
     }
 
     // Get or create cart
@@ -49,24 +76,35 @@ exports.addToCart = async (req, res) => {
     // Check if item already exists in cart with same options
     const existingItemIndex = cart.items.findIndex(
       item => 
-        item.product.toString() === productId &&
-        item.color === color &&
-        item.size === size &&
-        item.weight === weight
+        item.product.toString() === productId.toString() &&
+        item.color === (color || null) &&
+        item.size === (size || null) &&
+        item.weight === (weight || null)
     );
 
     if (existingItemIndex > -1) {
       // Update quantity
-      cart.items[existingItemIndex].quantity += quantity;
+      const newQuantity = cart.items[existingItemIndex].quantity + quantity;
+      
+      // Check stock again for updated quantity
+      if (product.stockQuantity < newQuantity) {
+        return res.status(400).json({ 
+          message: 'Insufficient stock for requested quantity',
+          availableStock: product.stockQuantity,
+          currentInCart: cart.items[existingItemIndex].quantity
+        });
+      }
+      
+      cart.items[existingItemIndex].quantity = newQuantity;
     } else {
       // Add new item
       cart.items.push({
         product: productId,
         quantity,
         price: product.price,
-        color,
-        size,
-        weight
+        color: color || undefined,
+        size: size || undefined,
+        weight: weight || undefined
       });
     }
 
@@ -80,7 +118,12 @@ exports.addToCart = async (req, res) => {
       cart
     });
   } catch (err) {
-    res.status(500).json({ message: 'Failed to add item to cart', error: err.message });
+    console.error('Error adding to cart:', err);
+    res.status(500).json({ 
+      message: 'Failed to add item to cart', 
+      error: err.message,
+      stack: process.env.NODE_ENV === 'development' ? err.stack : undefined
+    });
   }
 };
 
