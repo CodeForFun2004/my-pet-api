@@ -21,6 +21,15 @@ const doctorScheduleRoutes = require('./routes/doctorSchedule.routes');
 const appointmentRoutes = require('./routes/appointment.routes');
 const encounterRoutes = require('./routes/encounter.routes');
 const sendgridRoutes = require('./routes/sendgrid.routes');
+
+// Shopping routes
+const productRoutes = require('./routes/product.routes');
+const categoryRoutes = require('./routes/category.routes');
+const cartRoutes = require('./routes/cart.routes');
+const orderRoutes = require('./routes/order.routes');
+const couponRoutes = require('./routes/coupon.routes');
+const blogArticleRoutes = require('./routes/blogArticle.routes');
+
 const forumRoutes = require('./routes/post.routes');
 const geminiRoutes = require('./routes/chatbot.routes'); // Import routes chatbot
 const doctorAIRoutes = require('./routes/doctorAI.routes');
@@ -61,6 +70,14 @@ app.use('/api/doctor-schedules', doctorScheduleRoutes);
 app.use('/api/appointments', appointmentRoutes);
 app.use('/api/encounters', encounterRoutes);
 app.use('/api/email-test', sendgridRoutes);
+
+// Shopping routes
+app.use('/api/products', productRoutes);
+app.use('/api/categories', categoryRoutes);
+app.use('/api/cart', cartRoutes);
+app.use('/api/orders', orderRoutes);
+app.use('/api/coupons', couponRoutes);
+app.use('/api/blog-articles', blogArticleRoutes);
 app.use('/api/forum', forumRoutes);
 app.use('/api/chatbot', geminiRoutes); // Sử dụng routes chatbot
 app.use('/api/doctor-ai', doctorAIRoutes);
