@@ -161,7 +161,19 @@ exports.login = async (req, res) => {
         username: user.username,
         email: user.email,
         avatar: user.avatar,
-        role: user.role
+        role: user.role,
+        fullname: user.fullname,
+        phone: user.phone,
+        isActive: user.isActive,
+        createdAt: user.createdAt,
+        backgroundImg: user.backgroundImg,
+        introduction: user.introduction,
+        liveAt: user.liveAt,
+        workAt: user.workAt,
+        studyAt: user.studyAt,
+        from: user.from,
+        studiedAt: user.studiedAt
+
       },
       accessToken,
       refreshToken,

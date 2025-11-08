@@ -8,9 +8,14 @@ const protect = async (req, res, next) => {
     req.headers.authorization &&
     req.headers.authorization.startsWith('Bearer ')
   ) {
-    try {
+      try {
       token = req.headers.authorization.split(' ')[1];
-      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      // Sử dụng ACCESS_TOKEN_SECRET, fallback về JWT_SECRET nếu không có
+      const secret = process.env.ACCESS_TOKEN_SECRET || process.env.JWT_SECRET;
+      if (!secret) {
+        return res.status(500).json({ message: 'Lỗi cấu hình server: thiếu JWT secret' });
+      }
+      const decoded = jwt.verify(token, secret);
 
       req.user = await User.findById(decoded.id).select('-password');
       if (!req.user) {

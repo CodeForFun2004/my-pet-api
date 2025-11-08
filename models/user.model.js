@@ -12,6 +12,13 @@ const userSchema = new mongoose.Schema(
     email: { type: String, unique: true, sparse: true, lowercase: true, trim: true },
     phone: { type: String, trim: true },
     avatar: { type: String },
+    backgroundImg : { type: String },
+    introduction: { type: String },
+    workAt: { type: String },
+    studyAt: { type: String },
+    studiedAt: { type: String },
+    liveAt: { type: String },
+    from: { type: String },
     address: { type: String },
 
     // Auth
