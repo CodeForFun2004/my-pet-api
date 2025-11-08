@@ -178,3 +178,5 @@ db.clinics.insertMany([
 - File này cung cấp format để copy vào MongoDB Shell hoặc Compass
 - Để xem đầy đủ data cho Doctors, Appointments, DoctorSchedules, xem các file JSON tương ứng trong thư mục `data/`
 
+
+
